@@ -7,6 +7,25 @@ const tg = window.Telegram.WebApp;
 tg.ready();
 tg.expand();
 
+// Safe alert function that falls back to console.log if showAlert not supported
+function safeAlert(message) {
+    try {
+        if (tg.showAlert && typeof tg.showAlert === 'function') {
+            tg.showAlert(message);
+        } else {
+            console.log('[Alert]:', message);
+            // Show as visual message in UI instead
+            const msg = document.createElement('div');
+            msg.textContent = message;
+            msg.style.cssText = 'position:fixed;top:20px;left:50%;transform:translateX(-50%);background:#f44336;color:white;padding:15px 30px;border-radius:8px;z-index:9999;';
+            document.body.appendChild(msg);
+            setTimeout(() => msg.remove(), 3000);
+        }
+    } catch (e) {
+        console.log('[Alert]:', message);
+    }
+}
+
 // ВАЖНО: Укажите URL вашего backend после деплоя
 const BACKEND_URL = 'https://pro-montage-backend.vercel.app';
 
@@ -70,12 +89,12 @@ function handleVideoUpload(event) {
     console.log('Video uploaded:', file.name, file.size);
     
     if (!file.type.startsWith('video/')) {
-        tg.showAlert('Пожалуйста, выберите видео файл');
+        safeAlert('Пожалуйста, выберите видео файл');
         return;
     }
     
     if (file.size > 50 * 1024 * 1024) {
-        tg.showAlert('Видео слишком большое (макс. 50 МБ)');
+        safeAlert('Видео слишком большое (макс. 50 МБ)');
         return;
     }
     
@@ -186,12 +205,12 @@ async function launchMontage() {
     console.log('Launching montage...');
     
     if (!appState.mode) {
-        tg.showAlert('Выберите режим монтажа');
+        safeAlert('Выберите режим монтажа');
         return;
     }
     
     if (appState.mode === 'split_screen' && !appState.secondVideo) {
-        tg.showAlert('Загрузите дополнительное видео');
+        safeAlert('Загрузите дополнительное видео');
         showScreen(2);
         return;
     }
