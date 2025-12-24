@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Mini App</title>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .test-result {
+            background: white;
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 8px;
+            border-left: 4px solid #2196F3;
+        }
+        .success { border-left-color: #4CAF50; }
+        .error { border-left-color: #f44336; }
+        button {
+            padding: 15px 30px;
+            font-size: 16px;
+            background: #2196F3;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            width: 100%;
+            margin: 10px 0;
+        }
+        input[type="file"] {
+            padding: 10px;
+            margin: 10px 0;
+            width: 100%;
+        }
+    </style>
+</head>
+<body>
+    <h1>🧪 Test Mini App Upload</h1>
+    
+    <div class="test-result">
+        <strong>Backend URL:</strong> https://pro-montage-backend.vercel.app
+    </div>
+    
+    <div class="test-result" id="telegram-info">
+        Loading Telegram info...
+    </div>
+    
+    <button onclick="testBackend()">1. Test Backend Health</button>
+    
+    <input type="file" id="videoFile" accept="video/*">
+    <button onclick="testUpload()">2. Test Upload</button>
+    
+    <div id="results"></div>
+
+    <script>
+        const tg = window.Telegram.WebApp;
+        tg.ready();
+        tg.expand();
+        
+        const BACKEND_URL = 'https://pro-montage-backend.vercel.app';
+        
+        // Show Telegram info
+        document.getElementById('telegram-info').innerHTML = `
+            <strong>Telegram Info:</strong><br>
+            Platform: ${tg.platform}<br>
+            Version: ${tg.version}<br>
+            User ID: ${tg.initDataUnsafe.user?.id || 'N/A'}<br>
+            Is Expanded: ${tg.isExpanded}
+        `;
+        
+        function addResult(message, isSuccess) {
+            const div = document.createElement('div');
+            div.className = 'test-result ' + (isSuccess ? 'success' : 'error');
+            div.innerHTML = `<strong>[${new Date().toLocaleTimeString()}]</strong> ${message}`;
+            document.getElementById('results').insertBefore(div, document.getElementById('results').firstChild);
+        }
+        
+        async function testBackend() {
+            addResult('Testing backend...', true);
+            try {
+                const response = await fetch(`${BACKEND_URL}/api/health`);
+                const data = await response.json();
+                addResult(`✅ Backend OK: ${JSON.stringify(data)}`, true);
+            } catch (error) {
+                addResult(`❌ Backend Error: ${error.message}`, false);
+            }
+        }
+        
+        async function testUpload() {
+            const fileInput = document.getElementById('videoFile');
+            const file = fileInput.files[0];
+            
+            if (!file) {
+                addResult('❌ No file selected', false);
+                return;
+            }
+            
+            addResult(`Uploading: ${file.name} (${(file.size / 1024 / 1024).toFixed(2)} MB)`, true);
+            
+            try {
+                const formData = new FormData();
+                formData.append('video', file);
+                formData.append('userId', tg.initDataUnsafe.user?.id || '12345');
+                formData.append('settings', JSON.stringify({
+                    mode: 'split_screen',
+                    avatarPosition: 'top',
+                    screenRatio: 50
+                }));
+                
+                const response = await fetch(`${BACKEND_URL}/api/upload-second-video`, {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                const data = await response.json();
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${JSON.stringify(data)}`);
+                }
+                
+                addResult(`✅ Upload SUCCESS: ${JSON.stringify(data)}`, true);
+                
+            } catch (error) {
+                addResult(`❌ Upload Error: ${error.message}`, false);
+                addResult(`Stack: ${error.stack}`, false);
+            }
+        }
+        
+        // Auto test backend on load
+        window.addEventListener('load', () => {
+            setTimeout(testBackend, 1000);
+        });
+    </script>
+</body>
+</html>
+
