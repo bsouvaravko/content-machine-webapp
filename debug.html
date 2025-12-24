@@ -107,6 +107,25 @@
             
             log(`Testing upload: ${file.name} (${(file.size / 1024 / 1024).toFixed(2)} MB)`, 'info');
             
+            // Test 1: Simple POST without file
+            log('Test 1: Simple POST without file...', 'info');
+            try {
+                const response1 = await fetch(`${BACKEND_URL}/api/upload-second-video`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({test: 'data'})
+                });
+                const data1 = await response1.json();
+                log(`✅ Simple POST works: ${JSON.stringify(data1)}`, 'success');
+            } catch (error) {
+                log(`❌ Simple POST failed: ${error.message}`, 'error');
+                return;
+            }
+            
+            // Test 2: POST with FormData
+            log('Test 2: POST with FormData and file...', 'info');
             try {
                 const formData = new FormData();
                 formData.append('video', file);
@@ -117,11 +136,12 @@
                     screenRatio: 50
                 }));
                 
-                log('Sending request...', 'info');
+                log('Sending multipart request...', 'info');
                 
                 const response = await fetch(`${BACKEND_URL}/api/upload-second-video`, {
                     method: 'POST',
                     body: formData
+                    // Don't set Content-Type, let browser set it with boundary
                 });
                 
                 log(`Response status: ${response.status}`, 'info');
@@ -142,6 +162,16 @@
                 log(`❌ Upload Error: ${error.message}`, 'error');
                 log(`Type: ${error.constructor.name}`, 'error');
                 log(`Stack: ${error.stack}`, 'error');
+                
+                // Additional debugging
+                if (error.message.includes('Failed to fetch')) {
+                    log('⚠️  "Failed to fetch" usually means:', 'error');
+                    log('  - Network error (offline?)', 'error');
+                    log('  - CORS blocked by browser', 'error');
+                    log('  - Server refused connection', 'error');
+                    log('  - Request timeout', 'error');
+                }
+                
                 tg.showAlert(`Error: ${error.message}`);
             }
         }
