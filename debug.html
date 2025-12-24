@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Debug Upload</title>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+            background: #f0f0f0;
+        }
+        .log {
+            background: white;
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 5px;
+            word-wrap: break-word;
+            font-size: 12px;
+        }
+        .error { background: #ffebee; color: #c62828; }
+        .success { background: #e8f5e9; color: #2e7d32; }
+        .info { background: #e3f2fd; color: #1565c0; }
+        button {
+            padding: 15px 30px;
+            font-size: 16px;
+            margin: 10px 0;
+            width: 100%;
+            border: none;
+            border-radius: 5px;
+            background: #2196F3;
+            color: white;
+            cursor: pointer;
+        }
+        input[type="file"] {
+            padding: 10px;
+            margin: 10px 0;
+            width: 100%;
+        }
+    </style>
+</head>
+<body>
+    <h2>🔍 Debug Upload Test</h2>
+    <button onclick="testHealth()">1. Test Health</button>
+    <button onclick="testCORS()">2. Test CORS</button>
+    <input type="file" id="videoFile" accept="video/*">
+    <button onclick="testUpload()">3. Test Upload</button>
+    <button onclick="testTelegramInfo()">4. Telegram Info</button>
+    <div id="logs"></div>
+
+    <script>
+        const tg = window.Telegram.WebApp;
+        tg.ready();
+        tg.expand();
+        
+        const BACKEND_URL = 'https://pro-montage-backend.vercel.app';
+        
+        function log(message, type = 'info') {
+            const logs = document.getElementById('logs');
+            const logDiv = document.createElement('div');
+            logDiv.className = `log ${type}`;
+            logDiv.textContent = `[${new Date().toLocaleTimeString()}] ${message}`;
+            logs.insertBefore(logDiv, logs.firstChild);
+        }
+        
+        async function testHealth() {
+            log('Testing health endpoint...', 'info');
+            try {
+                const response = await fetch(`${BACKEND_URL}/api/health`);
+                const data = await response.json();
+                log(`✅ Health OK: ${JSON.stringify(data)}`, 'success');
+            } catch (error) {
+                log(`❌ Health Error: ${error.message}`, 'error');
+                log(`Stack: ${error.stack}`, 'error');
+            }
+        }
+        
+        async function testCORS() {
+            log('Testing CORS...', 'info');
+            try {
+                const response = await fetch(`${BACKEND_URL}/api/upload-second-video`, {
+                    method: 'OPTIONS'
+                });
+                log(`✅ CORS Status: ${response.status}`, 'success');
+                const headers = {};
+                response.headers.forEach((value, key) => {
+                    if (key.includes('access-control')) {
+                        headers[key] = value;
+                    }
+                });
+                log(`CORS Headers: ${JSON.stringify(headers)}`, 'info');
+            } catch (error) {
+                log(`❌ CORS Error: ${error.message}`, 'error');
+            }
+        }
+        
+        async function testUpload() {
+            const fileInput = document.getElementById('videoFile');
+            const file = fileInput.files[0];
+            
+            if (!file) {
+                log('❌ No file selected', 'error');
+                tg.showAlert('Select a file first');
+                return;
+            }
+            
+            log(`Testing upload: ${file.name} (${(file.size / 1024 / 1024).toFixed(2)} MB)`, 'info');
+            
+            try {
+                const formData = new FormData();
+                formData.append('video', file);
+                formData.append('userId', tg.initDataUnsafe.user?.id || '12345');
+                formData.append('settings', JSON.stringify({
+                    mode: 'split_screen',
+                    avatarPosition: 'top',
+                    screenRatio: 50
+                }));
+                
+                log('Sending request...', 'info');
+                
+                const response = await fetch(`${BACKEND_URL}/api/upload-second-video`, {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                log(`Response status: ${response.status}`, 'info');
+                
+                const text = await response.text();
+                log(`Response body: ${text}`, 'info');
+                
+                const data = JSON.parse(text);
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${JSON.stringify(data)}`);
+                }
+                
+                log(`✅ Upload SUCCESS: ${JSON.stringify(data)}`, 'success');
+                tg.showAlert('Upload successful!');
+                
+            } catch (error) {
+                log(`❌ Upload Error: ${error.message}`, 'error');
+                log(`Type: ${error.constructor.name}`, 'error');
+                log(`Stack: ${error.stack}`, 'error');
+                tg.showAlert(`Error: ${error.message}`);
+            }
+        }
+        
+        function testTelegramInfo() {
+            log('Telegram WebApp Info:', 'info');
+            log(`Platform: ${tg.platform}`, 'info');
+            log(`Version: ${tg.version}`, 'info');
+            log(`User ID: ${tg.initDataUnsafe.user?.id || 'N/A'}`, 'info');
+            log(`Is Expanded: ${tg.isExpanded}`, 'info');
+            log(`ViewportHeight: ${tg.viewportHeight}`, 'info');
+        }
+        
+        // Auto test on load
+        window.addEventListener('load', () => {
+            log('Page loaded', 'success');
+            testHealth();
+        });
+    </script>
+</body>
+</html>
+
