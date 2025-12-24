@@ -1,0 +1,455 @@
+/* Сброс стилей */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    -webkit-tap-highlight-color: transparent;
+}
+
+body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+    background: linear-gradient(135deg, #0a0e27 0%, #1a1f3a 100%);
+    color: #ffffff;
+    min-height: 100vh;
+    overflow-x: hidden;
+    -webkit-font-smoothing: antialiased;
+}
+
+.app-container {
+    width: 100%;
+    min-height: 100vh;
+    padding: 20px;
+    padding-bottom: 100px;
+}
+
+/* Экраны */
+.screen {
+    width: 100%;
+    animation: slideIn 0.3s ease-out;
+}
+
+.screen.hidden {
+    display: none;
+}
+
+@keyframes slideIn {
+    from {
+        opacity: 0;
+        transform: translateX(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+.screen-title {
+    font-size: 22px;
+    font-weight: 600;
+    text-align: center;
+    margin-bottom: 20px;
+    color: #ffffff;
+    line-height: 1.3;
+}
+
+/* ========== ЭКРАН 1: Режимы ========== */
+
+.mode-buttons {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.mode-btn {
+    display: flex;
+    align-items: center;
+    padding: 18px 20px;
+    background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+    border: none;
+    border-radius: 16px;
+    color: white;
+    font-size: 17px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.mode-btn:active {
+    transform: scale(0.98);
+}
+
+.mode-icon {
+    font-size: 28px;
+    margin-right: 16px;
+}
+
+.mode-label {
+    flex: 1;
+    text-align: left;
+}
+
+/* ========== ЭКРАН 2: Загрузка видео ========== */
+
+.video-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    margin-bottom: 16px;
+}
+
+.video-card-upload {
+    cursor: pointer;
+}
+
+.video-upload-box {
+    width: 100%;
+    aspect-ratio: 9/16;
+    background: rgba(255, 255, 255, 0.03);
+    border: 2px dashed rgba(255, 255, 255, 0.3);
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.video-upload-box:active {
+    transform: scale(0.95);
+    border-color: rgba(255, 255, 255, 0.5);
+}
+
+.upload-placeholder {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    padding: 20px;
+}
+
+.upload-icon {
+    font-size: 32px;
+}
+
+.upload-text {
+    font-size: 12px;
+    text-align: center;
+    color: rgba(255, 255, 255, 0.6);
+    line-height: 1.4;
+}
+
+.video-card {
+    cursor: pointer;
+}
+
+.video-preview-box {
+    width: 100%;
+    aspect-ratio: 9/16;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border-radius: 12px;
+    border: 3px solid rgba(76, 175, 80, 0.6);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    box-shadow: 0 0 20px rgba(76, 175, 80, 0.3);
+}
+
+.play-button {
+    width: 50px;
+    height: 50px;
+    background: rgba(255, 255, 255, 0.9);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 20px;
+    color: #333;
+}
+
+.avatar-placeholder {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    height: 100%;
+}
+
+.avatar-icon {
+    font-size: 48px;
+    opacity: 0.8;
+}
+
+.avatar-text {
+    font-size: 13px;
+    text-align: center;
+    color: rgba(255, 255, 255, 0.9);
+    padding: 0 10px;
+}
+
+.video-label {
+    text-align: center;
+    margin-top: 8px;
+    font-size: 14px;
+    color: rgba(255, 255, 255, 0.8);
+}
+
+/* Превью загруженного видео */
+.uploaded-video-preview {
+    margin-top: 20px;
+}
+
+.uploaded-video-preview.hidden {
+    display: none;
+}
+
+.preview-video-box {
+    width: 100%;
+    max-width: 250px;
+    aspect-ratio: 9/16;
+    background: #000;
+    border-radius: 12px;
+    overflow: hidden;
+    margin: 0 auto;
+    border: 3px solid rgba(76, 175, 80, 0.6);
+    box-shadow: 0 0 20px rgba(76, 175, 80, 0.3);
+}
+
+.preview-video-box video {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+/* ========== ЭКРАН 3: Композиция и настройки ========== */
+
+.composition-preview {
+    position: relative;
+    width: 100%;
+    max-width: 320px;
+    aspect-ratio: 9/16;
+    margin: 0 auto 20px;
+    background: #000;
+    border-radius: 12px;
+    overflow: hidden;
+    border: 2px solid rgba(255, 255, 255, 0.2);
+}
+
+.comp-video {
+    position: absolute;
+    background: rgba(100, 100, 100, 0.3);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s ease;
+}
+
+.comp-video-1 {
+    /* Позиция будет обновляться через JS */
+    background: rgba(50, 50, 80, 0.4);
+}
+
+.comp-video-2 {
+    /* Позиция будет обновляться через JS */
+    background: rgba(80, 50, 100, 0.4);
+    border: 2px solid rgba(76, 175, 80, 0.6);
+}
+
+.comp-placeholder {
+    font-size: 13px;
+    color: rgba(255, 255, 255, 0.7);
+    text-align: center;
+    padding: 10px;
+}
+
+.comp-overlay {
+    position: absolute;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.3);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.comp-chart {
+    display: flex;
+    align-items: flex-end;
+    gap: 6px;
+    height: 50px;
+}
+
+.chart-bar {
+    width: 20px;
+    background: rgba(255, 255, 255, 0.6);
+    border-radius: 3px 3px 0 0;
+}
+
+/* Настройки */
+.settings-panel {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.setting-group {
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 12px;
+    overflow: hidden;
+}
+
+.setting-group.hidden {
+    display: none;
+}
+
+.setting-header {
+    padding: 16px;
+    cursor: pointer;
+    user-select: none;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-weight: 500;
+    font-size: 16px;
+}
+
+.setting-header.checkbox-header {
+    cursor: default;
+}
+
+.toggle-icon {
+    font-size: 14px;
+    transition: transform 0.3s ease;
+}
+
+.toggle-icon.collapsed {
+    transform: rotate(0deg);
+}
+
+.setting-content {
+    padding: 0 16px 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.setting-content.collapsed {
+    display: none;
+}
+
+.setting-item {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.setting-label {
+    font-size: 14px;
+    color: rgba(255, 255, 255, 0.8);
+    font-weight: 500;
+}
+
+.setting-select {
+    width: 100%;
+    padding: 12px;
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 8px;
+    color: white;
+    font-size: 15px;
+    cursor: pointer;
+    outline: none;
+}
+
+.setting-slider {
+    width: 100%;
+    height: 6px;
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 3px;
+    outline: none;
+    -webkit-appearance: none;
+    cursor: pointer;
+}
+
+.setting-slider::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 22px;
+    height: 22px;
+    background: #4CAF50;
+    border-radius: 50%;
+    cursor: pointer;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+}
+
+.setting-slider::-moz-range-thumb {
+    width: 22px;
+    height: 22px;
+    background: #4CAF50;
+    border-radius: 50%;
+    cursor: pointer;
+    border: none;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+}
+
+/* Чекбокс */
+.checkbox-container {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    cursor: pointer;
+    user-select: none;
+}
+
+.checkbox-container input[type="checkbox"] {
+    width: 22px;
+    height: 22px;
+    cursor: pointer;
+    accent-color: #4CAF50;
+}
+
+.checkbox-label {
+    font-size: 16px;
+    font-weight: 500;
+}
+
+/* Радио кнопки */
+.radio-group {
+    display: flex;
+    gap: 24px;
+}
+
+.radio-container {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+    user-select: none;
+}
+
+.radio-container input[type="radio"] {
+    width: 20px;
+    height: 20px;
+    cursor: pointer;
+    accent-color: #4CAF50;
+}
+
+.radio-label {
+    font-size: 15px;
+}
+
+/* Адаптивность */
+@media (max-width: 360px) {
+    .screen-title {
+        font-size: 18px;
+    }
+    
+    .mode-btn {
+        padding: 14px 16px;
+        font-size: 15px;
+    }
+    
+    .composition-preview {
+        max-width: 280px;
+    }
+}

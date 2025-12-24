@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PRO Монтаж - Тест</title>
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        .test-panel {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: rgba(0, 0, 0, 0.9);
+            padding: 10px;
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            z-index: 1000;
+        }
+        .test-btn {
+            padding: 8px 16px;
+            background: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 12px;
+        }
+        .test-btn:active {
+            background: #45a049;
+        }
+    </style>
+</head>
+<body>
+    <!-- Mock Telegram WebApp -->
+    <script>
+        window.Telegram = {
+            WebApp: {
+                ready: function() { console.log('WebApp ready'); },
+                expand: function() { console.log('WebApp expanded'); },
+                close: function() { alert('WebApp closed'); },
+                sendData: function(data) { 
+                    console.log('Data sent to bot:', data);
+                    alert('Данные отправлены:\n\n' + data);
+                },
+                showAlert: function(msg) { alert(msg); },
+                BackButton: {
+                    show: function() { console.log('Back button shown'); },
+                    hide: function() { console.log('Back button hidden'); },
+                    onClick: function(callback) { 
+                        window.backButtonCallback = callback;
+                    }
+                },
+                MainButton: {
+                    setText: function(text) { 
+                        document.getElementById('main-btn').textContent = text;
+                    },
+                    show: function() { 
+                        document.getElementById('main-btn').style.display = 'block';
+                    },
+                    hide: function() { 
+                        document.getElementById('main-btn').style.display = 'none';
+                    },
+                    onClick: function(callback) { 
+                        window.mainButtonCallback = callback;
+                    },
+                    color: '',
+                    textColor: ''
+                },
+                version: '6.0',
+                colorScheme: 'dark',
+                initDataUnsafe: {
+                    user: {
+                        id: 12345,
+                        first_name: 'Test',
+                        username: 'testuser'
+                    }
+                }
+            }
+        };
+    </script>
+    
+    <div class="app-container" id="app">
+        
+        <!-- ЭКРАН 1: Выбор режима монтажа -->
+        <div class="screen" id="screen-mode" data-screen="1">
+            <h1 class="screen-title">Выберите режим монтажа</h1>
+            <div class="mode-buttons">
+                <button class="mode-btn" data-mode="split_screen" onclick="selectMode('split_screen')">
+                    <span class="mode-icon">📱</span>
+                    <span class="mode-label">Раздерение экрана</span>
+                </button>
+                <button class="mode-btn" data-mode="corner" onclick="selectMode('corner')">
+                    <span class="mode-icon">📐</span>
+                    <span class="mode-label">В углу экрана</span>
+                </button>
+                <button class="mode-btn" data-mode="video_insert" onclick="selectMode('video_insert')">
+                    <span class="mode-icon">🎬</span>
+                    <span class="mode-label">Видео-вставки</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- ЭКРАН 2: Выбор типа видео -->
+        <div class="screen hidden" id="screen-video" data-screen="2">
+            <h1 class="screen-title">Режим: <span id="selected-mode-title"></span></h1>
+            <div class="video-grid">
+                <div class="video-card" onclick="selectVideoType('additional')">
+                    <div class="video-placeholder">
+                        <div class="placeholder-text">Перетащите видео или кликните</div>
+                    </div>
+                    <div class="video-label">Доп. видео</div>
+                </div>
+                <div class="video-card active" onclick="selectVideoType('avatar')">
+                    <div class="video-preview-box">
+                        <div class="play-button">▶</div>
+                    </div>
+                    <div class="video-label">Видео с аватаром</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ЭКРАН 3: Настройки монтажа -->
+        <div class="screen hidden" id="screen-settings" data-screen="3">
+            
+            <!-- Видео превью -->
+            <div class="video-preview-top">
+                <div class="preview-frame">
+                    <div class="preview-placeholder">Видео превью</div>
+                </div>
+            </div>
+
+            <!-- Настройки -->
+            <div class="settings-panel">
+                
+                <!-- Основные настройки -->
+                <div class="setting-group">
+                    <div class="setting-header" onclick="toggleGroup('main-settings')">
+                        <span class="toggle-icon" id="toggle-main-settings">▼</span>
+                        <span>Настройки</span>
+                    </div>
+                    <div class="setting-content" id="main-settings">
+                        
+                        <div class="setting-item">
+                            <label class="setting-label">Позиция аватара:</label>
+                            <select class="setting-select" id="avatar-position" onchange="updateState('avatarPosition', this.value)">
+                                <option value="top">Сверху</option>
+                                <option value="bottom">Снизу</option>
+                                <option value="left">Слева</option>
+                                <option value="right">Справа</option>
+                            </select>
+                        </div>
+
+                        <div class="setting-item">
+                            <label class="setting-label">
+                                Доля экрана под осн. видео: <span id="screen-value">50</span>%
+                            </label>
+                            <input type="range" class="setting-slider" id="screen-ratio" 
+                                   min="0" max="100" value="50" 
+                                   oninput="updateSlider('screen', this.value)">
+                        </div>
+
+                        <div class="setting-item">
+                            <label class="setting-label">
+                                Масштаб лица: <span id="scale-value">50</span>%
+                            </label>
+                            <input type="range" class="setting-slider" id="face-scale" 
+                                   min="0" max="100" value="50" 
+                                   oninput="updateSlider('scale', this.value)">
+                        </div>
+
+                    </div>
+                </div>
+
+                <!-- Добавить субтитры -->
+                <div class="setting-group">
+                    <div class="setting-header checkbox-header">
+                        <label class="checkbox-container">
+                            <input type="checkbox" id="add-subtitles" onchange="toggleSubtitles(this.checked)">
+                            <span class="checkbox-label">Добавить субтитры</span>
+                        </label>
+                    </div>
+                </div>
+
+                <!-- Настройки субтитров -->
+                <div class="setting-group hidden" id="subtitle-group">
+                    <div class="setting-header" onclick="toggleGroup('subtitle-settings')">
+                        <span class="toggle-icon" id="toggle-subtitle-settings">▼</span>
+                        <span>Настройки субтитров</span>
+                    </div>
+                    <div class="setting-content" id="subtitle-settings">
+                        
+                        <div class="setting-item">
+                            <div class="radio-group">
+                                <label class="radio-container">
+                                    <input type="radio" name="subtitle-type" value="template" checked 
+                                           onchange="updateState('subtitleType', this.value)">
+                                    <span class="radio-label">Шаблон</span>
+                                </label>
+                                <label class="radio-container">
+                                    <input type="radio" name="subtitle-type" value="manual" 
+                                           onchange="updateState('subtitleType', this.value)">
+                                    <span class="radio-label">Ручная</span>
+                                </label>
+                            </div>
+                        </div>
+
+                        <div class="setting-item">
+                            <label class="setting-label">Шаблон:</label>
+                            <select class="setting-select" id="subtitle-template" onchange="updateState('subtitleTemplate', this.value)">
+                                <option value="minimal_clean">Minimal Clean</option>
+                                <option value="modern_bold">Modern Bold</option>
+                                <option value="elegant">Elegant</option>
+                                <option value="neon">Neon</option>
+                            </select>
+                        </div>
+
+                        <div class="setting-item">
+                            <label class="setting-label">Положение субтитров:</label>
+                            <select class="setting-select" id="subtitle-position" onchange="updateState('subtitlePosition', this.value)">
+                                <option value="top">Сверху</option>
+                                <option value="center">По центру</option>
+                                <option value="bottom" selected>Снизу</option>
+                            </select>
+                        </div>
+
+                        <div class="setting-item">
+                            <label class="setting-label">
+                                Размер шрифта: <span id="font-value">30</span> px
+                            </label>
+                            <input type="range" class="setting-slider" id="font-size" 
+                                   min="10" max="60" value="30" 
+                                   oninput="updateSlider('font', this.value)">
+                        </div>
+
+                    </div>
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+    <!-- Test Panel -->
+    <div class="test-panel">
+        <button class="test-btn" onclick="window.backButtonCallback && window.backButtonCallback()">◀ Back</button>
+        <button class="test-btn" id="main-btn" style="display:none;" onclick="window.mainButtonCallback && window.mainButtonCallback()">ЗАПУСТИТЬ</button>
+        <button class="test-btn" onclick="showScreen(1)">Screen 1</button>
+        <button class="test-btn" onclick="showScreen(2)">Screen 2</button>
+        <button class="test-btn" onclick="showScreen(3)">Screen 3</button>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
+
+
+
