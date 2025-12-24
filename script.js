@@ -219,17 +219,10 @@ async function launchMontage() {
     showProcessingScreen();
     
     try {
-        // Upload second video if exists
-        let taskId = null;
-        if (appState.secondVideo) {
-            taskId = await uploadSecondVideo();
-            updateProcessingStatus('✅ Видео загружено! Отправка боту...', 60);
-        }
-        
         // Send settings to bot
         const dataToSend = {
             mode: appState.mode,
-            taskId: taskId,
+            has_second_video: appState.secondVideo !== null,
             avatar_position: appState.avatarPosition,
             screen_ratio: appState.screenRatio,
             face_scale: appState.faceScale,
@@ -248,10 +241,10 @@ async function launchMontage() {
         // Show success message
         updateProcessingStatus('✅ Готово! Бот обработает видео и отправит результат.', 100);
         
-        // Close after 2 seconds
+        // Close after 1 second
         setTimeout(() => {
             tg.close();
-        }, 2000);
+        }, 1000);
         
     } catch (error) {
         console.error('Error:', error);
