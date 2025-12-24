@@ -223,6 +223,7 @@ async function launchMontage() {
         let taskId = null;
         if (appState.secondVideo) {
             taskId = await uploadSecondVideo();
+            updateProcessingStatus('✅ Видео загружено! Отправка боту...', 60);
         }
         
         // Send settings to bot
@@ -239,12 +240,18 @@ async function launchMontage() {
             font_size: appState.fontSize
         };
         
+        console.log('[Launch] Sending data to bot:', dataToSend);
+        
+        // Send to bot and close
         tg.sendData(JSON.stringify(dataToSend));
         
-        // Poll for result
-        if (taskId) {
-            await pollTaskStatus(taskId);
-        }
+        // Show success message
+        updateProcessingStatus('✅ Готово! Бот обработает видео и отправит результат.', 100);
+        
+        // Close after 2 seconds
+        setTimeout(() => {
+            tg.close();
+        }, 2000);
         
     } catch (error) {
         console.error('Error:', error);
