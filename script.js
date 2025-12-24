@@ -255,22 +255,38 @@ async function launchMontage() {
 async function uploadSecondVideo() {
     updateProcessingStatus('Загрузка второго видео...', 20);
     
-    const formData = new FormData();
-    formData.append('video', appState.secondVideo);
-    formData.append('userId', tg.initDataUnsafe.user.id);
-    formData.append('settings', JSON.stringify(appState));
-    
-    const response = await fetch(`${BACKEND_URL}/api/upload-second-video`, {
-        method: 'POST',
-        body: formData
-    });
-    
-    if (!response.ok) {
-        throw new Error('Ошибка загрузки видео');
+    try {
+        const formData = new FormData();
+        formData.append('video', appState.secondVideo);
+        formData.append('userId', tg.initDataUnsafe.user?.id || 'unknown');
+        formData.append('settings', JSON.stringify(appState));
+        
+        console.log('[Upload] Starting upload to:', `${BACKEND_URL}/api/upload-second-video`);
+        console.log('[Upload] File:', appState.secondVideo.name, appState.secondVideo.size, 'bytes');
+        
+        const response = await fetch(`${BACKEND_URL}/api/upload-second-video`, {
+            method: 'POST',
+            body: formData
+        });
+        
+        console.log('[Upload] Response status:', response.status);
+        
+        if (!response.ok) {
+            const errorText = await response.text();
+            console.error('[Upload] Error response:', errorText);
+            throw new Error(`Ошибка загрузки видео: ${response.status} - ${errorText}`);
+        }
+        
+        const result = await response.json();
+        console.log('[Upload] Success:', result);
+        return result.taskId;
+        
+    } catch (error) {
+        console.error('[Upload] Exception:', error);
+        console.error('[Upload] Error type:', error.constructor.name);
+        console.error('[Upload] Error message:', error.message);
+        throw error;
     }
-    
-    const result = await response.json();
-    return result.taskId;
 }
 
 async function pollTaskStatus(taskId) {
